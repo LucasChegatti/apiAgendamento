@@ -29,6 +29,11 @@ use Cake\ORM\Entity;
  */
 class Agendamento extends Entity
 {
+    const PERIODO_HOJE   = 1;
+    const PERIODO_SEMANA = 2;
+    const PERIODO_MES    = 3;
+    const PERIODO_ANO    = 4;
+
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -58,4 +63,76 @@ class Agendamento extends Entity
         'operacao' => true,
         'notificacoes' => true
     ];
+
+    public function getCountAgendamentos ($that, int $iPeriodo)
+    {
+        switch ($iPeriodo) {
+            case Agendamento::PERIODO_HOJE:
+                $conditions = "(DAY(data_hora) = DAY(now()))";
+                break;
+
+            case Agendamento::PERIODO_SEMANA:
+                $conditions = "(WEEK(data_hora) = WEEK(now()))";
+                break;
+
+            case Agendamento::PERIODO_MES:
+                $conditions = "(MONTH(data_hora) = MONTH(now()))";
+                break;
+
+            case Agendamento::PERIODO_ANO:
+                $conditions = "(YEAR(data_hora) = YEAR(now()))";
+                break;
+        }
+
+        $aAgendamentos = $that->Agendamentos->find('all', [
+            'conditions' => ['AND' => [ $conditions ]]
+        ])->toArray();
+
+        $aAgendamentosSituacao = $this->getCountSituacaoAgendamentos($aAgendamentos);
+        return $aAgendamentosSituacao;
+    }
+
+    private function getCountSituacaoAgendamentos ($aAgendamentos)
+    {
+        $array['Cadastrando']           = 0;
+        $array['Aprovado']              = 0;
+        $array['Trânsito Iniciado']     = 0;
+        $array['Confirmado na Triagem'] = 0;
+        $array['Dentro do Recinto']     = 0;
+        $array['Liberado']              = 0;
+        $array['Rejeitado']             = 0;
+
+        foreach ($aAgendamentos as $agendamento) {
+            switch ($agendamento->situacao_agendamento_id) {
+                case 1:
+                    $array['Cadastrando']++;
+                    break;
+                
+                case 2:
+                    $array['Aprovado']++;
+                    break;
+
+                case 3:
+                    $array['Trânsito Iniciado']++;
+                    break;
+
+                case 4:
+                    $array['Confirmado na Triagem']++;
+                    break;
+
+                case 5:
+                    $array['Dentro do Recinto']++;
+                    break;
+
+                case 6:
+                    $array['Liberado']++;
+                    break;
+
+                case 7:
+                    $array['Rejeitado']++;
+                    break;
+            }
+        }
+        return $array;
+    }
 }

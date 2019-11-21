@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Model\Entity\Agendamento;
 
 /**
  * Agendamentos Controller
@@ -20,7 +21,6 @@ class AgendamentosController extends AppController
     {
         if ($this->request->is(['post'])) {
             if ($this->request->data['data_inicio'] && $this->request->data['data_fim']) {
-                
                 $conditions = "data_hora BETWEEN '" . $this->request->data['data_inicio'] . "' AND '" .  $this->request->data['data_fim'] . "'";
 
                 $agendamentos = $this->Agendamentos->find('all', [
@@ -34,7 +34,6 @@ class AgendamentosController extends AppController
         } else {
             $agendamentos = $this->paginate($this->Agendamentos->find('all')->contain(['SituacaoAgendamentos', 'Operacoes', 'Usuarios']));
         }
-
         $this->set(compact('agendamentos'));
     }
 
@@ -48,7 +47,7 @@ class AgendamentosController extends AppController
     public function view($id = null)
     {
         $agendamento = $this->Agendamentos->get($id, [
-            'contain' => ['SituacaoAgendamentos']
+            'contain' => ['SituacaoAgendamentos', 'Operacoes', 'Usuarios']
         ]);
 
         $this->set('agendamento', $agendamento);
@@ -65,13 +64,21 @@ class AgendamentosController extends AppController
         if ($this->request->is('post')) {
             $agendamento = $this->Agendamentos->patchEntity($agendamento, $this->request->getData());
             if ($this->Agendamentos->save($agendamento)) {
-                $this->Flash->success(__('The agendamento has been saved.'));
+                $this->set([ 
+                    'success' => true,
+                    'data' => "Agendamento adicionado com sucesso!",
+                ]);
 
-                return $this->redirect(['action' => 'index']);
+                $this->set('_serialize' , ['success', 'data']);
+                return;
             }
-            $this->Flash->error(__('The agendamento could not be saved. Please, try again.'));
+
+            $this->response = $this->response->withStatus(400);
+            $message = 'Não foi possível adicionar o agendamento!';
+            $this->set(compact('message'));
+            $this->set('_serialize', ['message']);
+            return;
         }
-        $this->set(compact('agendamento'));
     }
 
     /**
@@ -116,5 +123,29 @@ class AgendamentosController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function indicadores (int $iPeriodo = null)
+    {
+        $oAgendamento = new Agendamento;
+        switch ($iPeriodo) {
+            case Agendamento::PERIODO_HOJE:
+                $aAgendamentos = $oAgendamento->getCountAgendamentos($this, Agendamento::PERIODO_HOJE);
+                break;
+
+            case Agendamento::PERIODO_SEMANA:
+                $aAgendamentos = $oAgendamento->getCountAgendamentos($this, Agendamento::PERIODO_SEMANA);
+                break;
+
+            case Agendamento::PERIODO_MES:
+                $aAgendamentos = $oAgendamento->getCountAgendamentos($this, Agendamento::PERIODO_MES);
+                break;
+
+            case Agendamento::PERIODO_ANO:
+                $aAgendamentos = $oAgendamento->getCountAgendamentos($this, Agendamento::PERIODO_ANO);
+                break;
+        }
+
+        $this->set('agendamentos', $aAgendamentos);
     }
 }

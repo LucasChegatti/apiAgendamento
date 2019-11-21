@@ -147,7 +147,7 @@ class AgendamentosTable extends Table
     {
         $rules->add($rules->existsIn(['usuario_id'], 'Usuarios'));
         $rules->add($rules->existsIn(['situacao_agendamento_id'], 'SituacaoAgendamentos'));
-        $rules->add($rules->existsIn(['operacao_id'], 'Operacaos'));
+        $rules->add($rules->existsIn(['operacao_id'], 'Operacoes'));
 
         return $rules;
     }
