@@ -32,11 +32,27 @@ class NotificacoesController extends AppController
      */
     public function view($id = null)
     {
-        $notificaco = $this->Notificacoes->get($id, [
-            'contain' => []
-        ]);
+        if ($this->request->is(['post'])) {
+            if ($this->request->data['usuario_id']) {
+                $this->loadModel('Agendamentos');
+                $aAgendamentos = $this->Agendamentos->find('all')
+                    ->select('id')
+                    ->where(['usuario_id' => $this->request->data['usuario_id']])
+                    ->toArray();
 
-        $this->set('notificaco', $notificaco);
+                $sAgendamentosIds = '0';
+                foreach ($aAgendamentos as $id) {
+                    $sAgendamentosIds .= ', ' . $id->id;
+                }
+                $conditions = 'agendamento_id IN (' . $sAgendamentosIds . ')';
+
+                $aNotificacoes = $this->Notificacoes->find('all')
+                    ->where([$conditions])
+                    ->toArray();
+
+                $this->set('notificacoes', $aNotificacoes);
+            }
+        }
     }
 
     /**

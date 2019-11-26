@@ -146,6 +146,6 @@ class AgendamentosController extends AppController
                 break;
         }
 
-        $this->set('agendamentos', $aAgendamentos);
+        $this->set($aAgendamentos);
     }
 }

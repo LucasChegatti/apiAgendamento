@@ -133,6 +133,14 @@ class Agendamento extends Entity
                     break;
             }
         }
-        return $array;
+
+        $index = [];
+        $valor = [];
+        foreach ($array as $key => $value) {
+            $index[] = $key;
+            $valor[] = $value;
+        }
+        
+        return ['index'=> $index, 'valor' => $valor];
     }
 }
