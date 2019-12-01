@@ -62,7 +62,12 @@ class UsuariosController extends AppController
                             'sub' => $user['cpf'],
                             'exp' => time() + 360000,
                         ], Security::salt()),
-                        'perfil' => $user['perfil_id']
+                        'user'=>[
+                            'nome'=>$user['nome'],
+                            'id'=>$user['id'],
+                            'perfil'=>$user['perfil_id'],
+                            'ativo' => $user['ativo']
+                        ]
                     ],
                 ]);
                 

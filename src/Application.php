@@ -94,6 +94,7 @@ class Application extends BaseApplication
 
         $this->addPlugin('Migrations');
         $this->addPlugin('ADmad/JwtAuth');
+        //$this->addPlugin('Cors', ['bootstrap' => true, 'routes' => false]);
 
         // Load more plugins here
     }

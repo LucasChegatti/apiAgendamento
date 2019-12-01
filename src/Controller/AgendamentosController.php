@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use App\Model\Entity\Agendamento;
+use App\Util\DateUtil;
 
 /**
  * Agendamentos Controller
@@ -21,8 +22,14 @@ class AgendamentosController extends AppController
     {
         if ($this->request->is(['post'])) {
             if ($this->request->data['data_inicio'] && $this->request->data['data_fim']) {
-                $conditions = "data_hora BETWEEN '" . $this->request->data['data_inicio'] . "' AND '" .  $this->request->data['data_fim'] . "'";
+                
+                $inicio = DateUtil::dateTimeToDB($this->request->data['data_inicio']);
+                $fim = DateUtil::dateTimeToDB($this->request->data['data_fim']);
+                $conditions = "data_hora BETWEEN '" . 
+                    $inicio->i18nFormat('yyyy-MM-dd'). "' AND '" .
+                    $fim->i18nFormat('yyyy-MM-dd'). "'";
 
+                
                 $agendamentos = $this->Agendamentos->find('all', [
                     'conditions' => ['AND' => [ $conditions ]],
                     'contain' => ['SituacaoAgendamentos', 'Operacoes', 'Usuarios'],
@@ -49,8 +56,7 @@ class AgendamentosController extends AppController
         $agendamento = $this->Agendamentos->get($id, [
             'contain' => ['SituacaoAgendamentos', 'Operacoes', 'Usuarios']
         ]);
-
-        $this->set('agendamento', $agendamento);
+        $this->set(compact('agendamento'));
     }
 
     /**
